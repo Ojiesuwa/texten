@@ -1,20 +1,22 @@
 import { NextResponse } from "next/server";
+import Groq from "groq-sdk";
 import { writeFile } from "fs/promises";
 import path from "path";
-import Groq from "groq-sdk";
 import fs from "fs";
-import { Readable } from "stream";
+import os from "os";
 
 const groq = new Groq({ apiKey: process.env.GROQ_KEY });
 
 export async function POST(request: Request) {
+  let tempFilePath = null;
+
   try {
-    console.log("LALA");
+    console.log("Processing audio transcription request");
 
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
 
-    console.log(file?.name);
+    console.log("Received file:", file?.name);
 
     if (!file) {
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
@@ -22,39 +24,48 @@ export async function POST(request: Request) {
 
     // Convert file to buffer
     const buffer = Buffer.from(await file.arrayBuffer());
-    const stream = Readable.from(buffer);
 
-    // Create a unique filename
+    // Create a temporary file (using system temp directory)
+    const tempDir = os.tmpdir();
     const timestamp = Date.now();
-    const ext = path.extname(file.name);
-    const filename = `${timestamp}.mp3`;
+    const fileExt = path.extname(file.name) || ".mp3"; // Default to mp3 if no extension
+    const tempFileName = `temp_audio_${timestamp}${fileExt}`;
+    tempFilePath = path.join(tempDir, tempFileName);
 
-    console.log("Reached here");
+    // Write to temporary file
+    await writeFile(tempFilePath, buffer);
 
-    // Save to public/uploads directory
-    const uploadDir = path.join(process.cwd(), "public", "uploads");
-
-    await writeFile(path.join(uploadDir, filename), buffer);
-
-    const filePath = path.join(process.cwd(), "public", "uploads", filename);
+    console.log("Temp file created at:", tempFilePath);
+    console.log("Sending to Groq API for transcription");
 
     const transcription = await groq.audio.transcriptions.create({
-      file: fs.createReadStream(filePath),
+      file: fs.createReadStream(tempFilePath),
       model: "whisper-large-v3",
       response_format: "verbose_json",
       timestamp_granularities: ["word"],
     });
-    console.log(transcription);
 
-    return NextResponse.json(
-      { success: true, filename, transcription },
-      { status: 200 }
-    );
+    console.log("Transcription received");
+
+    return NextResponse.json({ success: true, transcription }, { status: 200 });
   } catch (error) {
-    console.error("Error uploading file:", error);
+    console.error("Error processing transcription:", error);
     return NextResponse.json(
-      { error: "Failed to upload file" },
+      {
+        error: "Failed to process transcription",
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     );
+  } finally {
+    // Clean up: Delete temporary file if it was created
+    if (tempFilePath && fs.existsSync(tempFilePath)) {
+      try {
+        fs.unlinkSync(tempFilePath);
+        console.log("Temporary file deleted:", tempFilePath);
+      } catch (cleanupError) {
+        console.error("Error cleaning up temporary file:", cleanupError);
+      }
+    }
   }
 }
