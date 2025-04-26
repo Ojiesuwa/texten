@@ -1,26 +1,456 @@
 @import "tailwindcss";
+@import url("https://site-assets.fontawesome.com/releases/v6.7.2/css/all.css");
+@import url("../css/animation.css");
 
 :root {
-  --background: #ffffff;
+  --background: #070707;
   --foreground: #171717;
+  --accent: #5900ff;
+  --accent-dark: #2c007e;
+  --accent-high: #a472ff;
+  --accent-mid: rgb(108, 37, 240);
+  --accent-low-opacity: #2c007e44;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+* {
+  transition: 0.2s ease;
+  /* font-family: "Poppins", sans-serif; */
+  font-family: "Poppins";
+  box-sizing: border-box;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+*::-webkit-scrollbar {
+  display: none;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--background);
+  /* color: #fff; */
+}
+
+.login__hover:hover {
+  border-color: var(--accent-high);
+}
+
+.login__hover:hover * {
+  color: var(--accent-high);
+}
+
+.page {
+  width: 100%;
+  height: calc(100svh - 60px);
+  padding: 20px 30px;
+}
+
+.background__color {
+  background-color: var(--background);
+}
+
+textarea:focus {
+  outline: none;
+}
+
+button {
+  /* width: fit-content; */
+  height: 50px;
+  background-color: var(--accent);
+  padding: 0 30px;
+  font-size: 13px;
+  color: #fff;
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+  transition: color 0.3s ease;
+  z-index: 1;
+}
+
+button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background-color: #fff; /* You can change this to any hover bg color */
+  z-index: -1;
+  transition: left 0.4s ease;
+}
+
+button:hover::before {
+  left: 0;
+}
+
+button:hover {
+  cursor: pointer;
+  color: var(--accent); /* Optional: Invert text color for contrast */
+}
+
+button:disabled {
+  filter: brightness(0.3);
+}
+
+.specialButton {
+  /* width: fit-content; */
+
+  background-color: var(--accent);
+  padding: 0 30px;
+  font-size: 13px;
+  color: #fff;
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+  transition: color 0.3s ease;
+  z-index: 1;
+}
+
+.specialButton::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background-color: #fff; /* You can change this to any hover bg color */
+  z-index: -1;
+  transition: left 0.4s ease;
+}
+
+.specialButton:hover::before {
+  left: 0;
+}
+
+.specialButton:hover {
+  cursor: pointer;
+  color: var(--accent); /* Optional: Invert text color for contrast */
+}
+
+.specialButton:disabled {
+  filter: brightness(0.3);
+}
+
+.modal__background__active {
+  width: 100vw;
+  height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  left: 0;
+  top: 0;
+  backdrop-filter: blur(4px);
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: 200;
+}
+.modal__background__inactive {
+  width: 100vw;
+  height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  left: 0;
+  top: 0;
+  backdrop-filter: blur(4px);
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: 200;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.modal__active {
+  width: 100%;
+  max-width: 500px;
+  height: clamp(300px, 350px, 100%);
+  background-color: var(--foreground);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 10px;
+}
+
+.modal__inactive {
+  width: 100%;
+  max-width: 500px;
+  height: clamp(300px, 350px, 100%);
+  background-color: var(--foreground);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 10px;
+  transform: scaleY(0);
+}
+.export__modal__active {
+  width: 100%;
+  max-width: 300px;
+  height: clamp(100px, 200px, 100%);
+  background-color: var(--accent-dark);
+  border-radius: 10px;
+}
+
+.export__modal__inactive {
+  width: 100%;
+  max-width: 300px;
+  height: clamp(100px, 200px, 100%);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 10px;
+  transform: scaleY(0);
+}
+
+.accent__background {
+  background-color: var(--accent-dark);
+}
+.accent__background__mid {
+  background-color: var(--accent-mid);
+}
+.accent__background__low {
+  background-color: var(--accent-low-opacity);
+  border: 0.5px solid var(--accent-high);
+}
+
+.accent__color {
+  color: var(--accent-high);
+}
+
+.accent__outline {
+  outline: 1px solid var(--accent);
+  outline-offset: 5px;
+}
+
+.scroll__hidden::-webkit-scrollbar {
+  display: none;
+}
+
+.control__header p:hover {
+  cursor: pointer;
+  /* opacity: 0.5; */
+}
+
+.control__header .underline {
+  text-decoration: underline;
+  text-decoration-color: var(--accent-high);
+  text-underline-offset: 7px;
+  text-decoration-thickness: 2px;
+}
+
+.styling__main {
+  width: 100%;
+  height: 150px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 10px;
+  padding: 0 20px;
+  flex-shrink: 0;
+}
+
+.styling__main__small {
+  height: 46px;
+  overflow: hidden;
+}
+
+.styling__main * {
+  color: #fff;
+}
+
+.styling__header {
+  width: 100%;
+  height: 45px;
+  display: flex;
+  flex-shrink: 0;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.styling__header:hover {
+  cursor: pointer;
+}
+
+.styling__header p {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.styling__header i {
+  font-size: 15px;
+}
+
+.styling__body {
+  overflow-y: scroll;
+}
+
+.styling__body input {
+  border-bottom: 1px solid #aaa;
+
+  font-size: 13px;
+}
+
+/* Container for the progress bar */
+.progress-container {
+  width: 100%;
+  max-width: 400px;
+  margin: 50px auto;
+  text-align: center;
+}
+
+/* Styling the progress bar input */
+.progress-bar {
+  width: 100%;
+  height: 3px;
+  background-color: rgba(255, 255, 255, 0.4); /* Ash background */
+  -webkit-appearance: none;
+  appearance: none;
+  border-radius: 5px;
+  outline: none;
+  cursor: pointer;
+}
+
+/* Custom styling for the range input's thumb (the draggable handle) */
+.progress-bar::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: var(--accent); /* Main color */
+  cursor: pointer;
+}
+
+.progress-bar::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: var(--accent); /* Main color */
+  cursor: pointer;
+}
+
+/* Display the progress value next to the bar */
+#progress-value {
+  font-size: 1rem;
+  color: var(--accent);
+  margin-top: 10px;
+}
+
+.color__box {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.color__box:hover {
+  cursor: pointer;
+  transform: scale(1.03);
+}
+
+.video__slider {
+  appearance: none;
+  width: 100%;
+  height: 2px;
+  background: #ddd;
+  border-radius: 9999px;
+  outline: none;
+  transition: all 0.3s ease; /* Smooth thumb transition */
+  cursor: pointer;
+}
+
+.video__slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background-color: var(--accent); /* Main color */
+  cursor: pointer;
+  transition: all 0.3s ease; /* Smooth thumb transition */
+}
+
+.video__slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid white;
+}
+
+.no__transition {
+  transition: 0s linear;
+}
+
+.transcript__item {
+  background-color: transparent;
+  border: 0.5px solid transparent;
+}
+
+.subtitle__text {
+  color: #fff;
+  text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.5), 1px -1px 0 rgba(0, 0, 0, 0.5),
+    -1px 1px 0 rgba(0, 0, 0, 0.5), 1px 1px 0 rgba(0, 0, 0, 0.5);
+  transition: none;
+}
+
+input:focus {
+  outline: 0;
+}
+
+/* toast */
+.Toastify__close-button {
+  width: fit-content;
+}
+/* Add this to your CSS file or a <style> tag */
+.custom-toast {
+  background: rgba(0, 0, 0, 0.6) !important;
+  color: white !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+}
+
+select {
+  width: fit-content;
+  font-size: 12px;
+  outline: 0;
+}
+
+select:focus {
+  outline: 0;
+}
+
+/* loading bar */
+.loading__bar {
+  height: 100%;
+  width: 30%;
+  background-color: var(--accent);
+  position: absolute;
+  left: 0;
+  top: 0;
+
+  animation: loader 2s infinite ease;
+}
+
+@keyframes loader {
+  0% {
+    width: 30%;
+    left: 0;
+  }
+  50% {
+    width: 50%;
+    left: 50vw;
+  }
+
+  100% {
+    width: 30%;
+    left: 0;
+  }
+}
+
+/* Customize <progress> styles */
+progress::-webkit-progress-bar {
+  background-color: white;
+  border-radius: 9999px;
+}
+
+progress::-webkit-progress-value {
+  background-color: #9333ea; /* Tailwind purple-600 */
+  border-radius: 9999px;
+}
+
+progress::-moz-progress-bar {
+  background-color: #9333ea;
+  border-radius: 9999px;
 }
