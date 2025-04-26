@@ -1,22 +1,27 @@
 import { NextResponse } from "next/server";
-import Groq from "groq-sdk";
 import { writeFile } from "fs/promises";
 import path from "path";
+import Groq from "groq-sdk";
 import fs from "fs";
-import os from "os";
+import { Readable } from "stream";
+
+// Get your groq api key
+// PS: The Groq Javascript module works only when you read stream from file saved on the disk
+// Vercel has an issue with this
+// There's a hack to it but I've lost motivation for this project
+// Goodluck Sirs and Ma's
+// Have fun!
 
 const groq = new Groq({ apiKey: process.env.GROQ_KEY });
 
 export async function POST(request: Request) {
-  let tempFilePath = null;
-
   try {
-    console.log("Processing audio transcription request");
+    console.log("LALA");
 
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
 
-    console.log("Received file:", file?.name);
+    console.log(file?.name);
 
     if (!file) {
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
@@ -24,48 +29,39 @@ export async function POST(request: Request) {
 
     // Convert file to buffer
     const buffer = Buffer.from(await file.arrayBuffer());
+    const stream = Readable.from(buffer);
 
-    // Create a temporary file (using system temp directory)
-    const tempDir = os.tmpdir();
+    // Create a unique filename
     const timestamp = Date.now();
-    const fileExt = path.extname(file.name) || ".mp3"; // Default to mp3 if no extension
-    const tempFileName = `temp_audio_${timestamp}${fileExt}`;
-    tempFilePath = path.join(tempDir, tempFileName);
+    const ext = path.extname(file.name);
+    const filename = `${timestamp}.mp3`;
 
-    // Write to temporary file
-    await writeFile(tempFilePath, buffer);
+    console.log("Reached here");
 
-    console.log("Temp file created at:", tempFilePath);
-    console.log("Sending to Groq API for transcription");
+    // Save to public/uploads directory
+    const uploadDir = path.join(process.cwd(), "public", "uploads");
+
+    await writeFile(path.join(uploadDir, filename), buffer);
+
+    const filePath = path.join(process.cwd(), "public", "uploads", filename);
 
     const transcription = await groq.audio.transcriptions.create({
-      file: fs.createReadStream(tempFilePath),
+      file: fs.createReadStream(filePath),
       model: "whisper-large-v3",
       response_format: "verbose_json",
       timestamp_granularities: ["word"],
     });
+    console.log(transcription);
 
-    console.log("Transcription received");
-
-    return NextResponse.json({ success: true, transcription }, { status: 200 });
-  } catch (error) {
-    console.error("Error processing transcription:", error);
     return NextResponse.json(
-      {
-        error: "Failed to process transcription",
-        details: error instanceof Error ? error.message : String(error),
-      },
+      { success: true, filename, transcription },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error uploading file:", error);
+    return NextResponse.json(
+      { error: "Failed to upload file" },
       { status: 500 }
     );
-  } finally {
-    // Clean up: Delete temporary file if it was created
-    if (tempFilePath && fs.existsSync(tempFilePath)) {
-      try {
-        fs.unlinkSync(tempFilePath);
-        console.log("Temporary file deleted:", tempFilePath);
-      } catch (cleanupError) {
-        console.error("Error cleaning up temporary file:", cleanupError);
-      }
-    }
   }
 }
