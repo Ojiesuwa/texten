@@ -3,7 +3,7 @@
 import { emitDBChange } from "./dbEvent"; // make sure this is correctly pathed
 
 const DB_NAME = "MyCustomDB";
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 
 function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
